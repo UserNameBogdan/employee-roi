@@ -112,7 +112,8 @@
       "artifactName": "KISS-Employee-ROI-${version}.${ext}",
       "synopsis": "Professional team cost optimization and ROI tracking",
       "description": "Track employee costs, optimize team allocation, and maximize ROI with KISS Employee ROI Calculator."
-    }
+    },
+    "publish": null
   },
   "devDependencies": {
     "electron": "^28.0.0",
