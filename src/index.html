@@ -1,0 +1,727 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Employee ROI - KISS Platform</title>
+  <link rel="stylesheet" href="styles/main.css">
+</head>
+<body>
+  <!-- License Screen -->
+  <div id="license-screen" class="license-screen">
+    <div class="license-card">
+      <h1>🏢 Employee ROI</h1>
+      <p>KISS Platform - Module 4</p>
+      <form id="license-form">
+        <div class="form-group">
+          <label>License Key</label>
+          <input type="text" id="license-key" placeholder="KISS-ROI-XXXXX-XXXXX" required>
+        </div>
+        <div class="form-group">
+          <label>Company Name</label>
+          <input type="text" id="company-name" placeholder="Your Company" required>
+        </div>
+        <div class="form-group">
+          <label>Country</label>
+          <select id="country-select" required>
+            <option value="">Select country...</option>
+          </select>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Employer Tax %</label>
+            <input type="number" id="employer-tax" step="0.1" value="42.5">
+          </div>
+          <div class="form-group">
+            <label>Dividend Tax %</label>
+            <input type="number" id="dividend-tax" step="0.1" value="8">
+          </div>
+          <div class="form-group">
+            <label>CA Tax %</label>
+            <input type="number" id="ca-tax" step="0.1" value="3">
+          </div>
+        </div>
+        <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 10px;">
+          Activate License
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Main App -->
+  <div id="main-app" class="app-container hidden">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <h1>📊 Employee ROI</h1>
+      </div>
+      <nav class="sidebar-nav">
+        <div class="nav-item active" data-page="dashboard">
+          <span class="icon">📈</span> Dashboard
+        </div>
+        <div class="nav-item" data-page="employees">
+          <span class="icon">👥</span> Employees
+        </div>
+        <div class="nav-item" data-page="planning">
+          <span class="icon">📋</span> Planning Hub
+        </div>
+        <div class="nav-item" data-page="jobs">
+          <span class="icon">🔨</span> Jobs
+        </div>
+        <div class="nav-item" data-page="reports">
+          <span class="icon">📊</span> Reports
+        </div>
+        <div class="nav-item" data-page="settings">
+          <span class="icon">⚙️</span> Settings
+        </div>
+      </nav>
+      <div class="sidebar-footer">
+        <span id="app-version">v4.0.0</span> | KISS Platform
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <!-- Dashboard -->
+      <div id="page-dashboard" class="page active">
+        <div class="page-header">
+          <h2>📈 Dashboard</h2>
+          <div style="display: flex; align-items: center; gap: 15px; margin-top: 10px;">
+            <label style="font-weight: 600;">View Month:</label>
+            <select id="dash-month-selector" style="padding: 8px; border-radius: 6px; border: 2px solid #e2e8f0;">
+              <!-- Will be populated with months dynamically -->
+            </select>
+            <button class="btn btn-secondary" id="dash-current-month">Current Month</button>
+          </div>
+        </div>
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-label">Budget from Completed</div>
+            <div class="stat-value" id="dash-budget-completed">0 lei</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Budget from Active</div>
+            <div class="stat-value" id="dash-budget-active">0 lei</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Salaries to Pay</div>
+            <div class="stat-value" id="dash-salaries">0 lei</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Balance</div>
+            <div class="stat-value" id="dash-balance">0 lei</div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <h3>Quick Stats</h3>
+          </div>
+          <div class="stats-grid">
+            <div class="stat-card small">
+              <div class="stat-label">Completed This Month</div>
+              <div class="stat-value" id="dash-completed-count">0</div>
+            </div>
+            <div class="stat-card small">
+              <div class="stat-label">Active Jobs</div>
+              <div class="stat-value" id="dash-active-count">0</div>
+            </div>
+            <div class="stat-card small">
+              <div class="stat-label">Production Employees</div>
+              <div class="stat-value" id="dash-employees-count">0</div>
+            </div>
+            <div class="stat-card small">
+              <div class="stat-label">Month Revenue</div>
+              <div class="stat-value" id="dash-revenue">0 lei</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Employees -->
+      <div id="page-employees" class="page">
+        <div class="page-header">
+          <h2>👥 Employees</h2>
+          <p>Manage your workforce</p>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <h3>Employee List</h3>
+            <button class="btn btn-primary" id="btn-add-employee">+ Add Employee</button>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Department</th>
+                <th>Contract</th>
+                <th>OT</th>
+                <th class="text-right">Cost/Hour</th>
+                <th class="text-right">Monthly Cost</th>
+                <th class="text-center">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="employees-table-body">
+              <tr><td colspan="7" class="text-center">No employees</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Planning Hub - Now just a button that opens modal -->
+      <div id="page-planning" class="page">
+        <div class="page-header">
+          <h2>📋 Planning Hub</h2>
+          <p>Plan new jobs and generate scenarios</p>
+        </div>
+        <div class="card">
+          <p>Click the button below to plan a new job.</p>
+          <button class="btn btn-primary btn-lg" id="btn-open-planning-modal">📝 Plan New Job</button>
+        </div>
+        <div class="card mt-20">
+          <h3>Saved Scenarios (not yet activated)</h3>
+          <div id="planning-saved-scenarios"></div>
+        </div>
+      </div>
+
+      <!-- Jobs -->
+      <div id="page-jobs" class="page">
+        <div class="page-header">
+          <h2>🔨 Jobs</h2>
+          <p>Manage active and completed jobs</p>
+        </div>
+        <div class="tabs">
+          <div class="tab active" data-tab="planning">Planning</div>
+          <div class="tab" data-tab="active">Active</div>
+          <div class="tab" data-tab="completed">Completed</div>
+        </div>
+        <div id="tab-planning" class="tab-content active">
+          <div id="planning-scenarios-list"></div>
+        </div>
+        <div id="tab-active" class="tab-content">
+          <div id="active-jobs-list"></div>
+        </div>
+        <div id="tab-completed" class="tab-content">
+          <div id="completed-jobs-list"></div>
+        </div>
+      </div>
+
+      <!-- Reports -->
+      <div id="page-reports" class="page">
+        <div class="page-header">
+          <h2>📊 Reports</h2>
+          <p>Performance analytics and exports</p>
+        </div>
+        
+        <div class="card">
+          <div class="card-header">
+            <h3>Overview</h3>
+            <div>
+              <button class="btn btn-sm btn-secondary" id="btn-export-employees-csv">📥 Export Employees CSV</button>
+              <button class="btn btn-sm btn-secondary" id="btn-export-jobs-csv">📥 Export Jobs CSV</button>
+            </div>
+          </div>
+          <div class="stats-grid">
+            <div class="stat-card small">
+              <div class="stat-label">Total Jobs</div>
+              <div class="stat-value" id="report-total-jobs">0</div>
+            </div>
+            <div class="stat-card small">
+              <div class="stat-label">Total Revenue</div>
+              <div class="stat-value" id="report-total-revenue">0 lei</div>
+            </div>
+            <div class="stat-card small">
+              <div class="stat-label">Labor Profit</div>
+              <div class="stat-value" id="report-labor-profit">0 lei</div>
+            </div>
+            <div class="stat-card small">
+              <div class="stat-label">Avg Margin</div>
+              <div class="stat-value" id="report-avg-margin">0%</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="salary-coverage">
+          <div class="coverage-box">
+            <h4>👑 Owner</h4>
+            <div class="coverage-stats">
+              <div class="stat-card small">
+                <div class="stat-label">To Cover</div>
+                <div class="stat-value" id="owner-salary">0 lei</div>
+              </div>
+              <div class="stat-card small">
+                <div class="stat-label">Covered</div>
+                <div class="stat-value" id="owner-covered">0 lei</div>
+              </div>
+              <div class="stat-card small">
+                <div class="stat-label" id="owner-diff-label">Diff</div>
+                <div class="stat-value" id="owner-diff">0 lei</div>
+              </div>
+            </div>
+          </div>
+          <div class="coverage-box">
+            <h4>📋 Admin</h4>
+            <div class="coverage-stats">
+              <div class="stat-card small">
+                <div class="stat-label">To Cover</div>
+                <div class="stat-value" id="admin-salary">0 lei</div>
+              </div>
+              <div class="stat-card small">
+                <div class="stat-label">Covered</div>
+                <div class="stat-value" id="admin-covered">0 lei</div>
+              </div>
+              <div class="stat-card small">
+                <div class="stat-label" id="admin-diff-label">Diff</div>
+                <div class="stat-value" id="admin-diff">0 lei</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>Employee Performance</h3>
+          <table class="mt-20">
+            <thead>
+              <tr>
+                <th>Employee</th>
+                <th>Contract</th>
+                <th class="text-right">Hours Worked</th>
+                <th class="text-right">Hours Produced</th>
+                <th class="text-right">Efficiency</th>
+                <th class="text-right">Cost</th>
+                <th class="text-right">Revenue</th>
+                <th class="text-right">Difference</th>
+              </tr>
+            </thead>
+            <tbody id="report-employees-tbody">
+              <tr><td colspan="8" class="text-center">No data</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="card">
+          <h3>Job Profitability</h3>
+          <table class="mt-20">
+            <thead>
+              <tr>
+                <th>Job</th>
+                <th>Client</th>
+                <th class="text-right">Revenue</th>
+                <th class="text-right">Labor Budget</th>
+                <th class="text-right">Actual Cost</th>
+                <th class="text-right">Labor Profit</th>
+                <th class="text-right">Margin</th>
+              </tr>
+            </thead>
+            <tbody id="report-jobs-tbody">
+              <tr><td colspan="7" class="text-center">No data</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Settings -->
+      <div id="page-settings" class="page">
+        <div class="page-header">
+          <h2>⚙️ Settings</h2>
+          <p>Configure your application</p>
+        </div>
+        <div class="card">
+          <h3>Company Settings</h3>
+          <div class="form-row mt-20">
+            <div class="form-group">
+              <label>Company Name</label>
+              <input type="text" id="settings-company-name">
+            </div>
+            <div class="form-group">
+              <label>Country</label>
+              <input type="text" id="settings-country" readonly>
+            </div>
+            <div class="form-group">
+              <label>Currency</label>
+              <input type="text" id="settings-currency" readonly>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Employer Tax %</label>
+              <input type="number" id="settings-employer-tax" step="0.1">
+            </div>
+            <div class="form-group">
+              <label>Dividend Tax %</label>
+              <input type="number" id="settings-dividend-tax" step="0.1">
+            </div>
+            <div class="form-group">
+              <label>CA Tax %</label>
+              <input type="number" id="settings-ca-tax" step="0.1">
+            </div>
+          </div>
+          <button class="btn btn-primary mt-20" id="btn-save-settings">Save Settings</button>
+        </div>
+        <div class="card">
+          <h3>Default Revenue Formula</h3>
+          <div class="form-row mt-20">
+            <div class="form-group">
+              <label>Owner %</label>
+              <input type="number" id="settings-formula-owner" value="30" min="0" max="100">
+            </div>
+            <div class="form-group">
+              <label>Admin %</label>
+              <input type="number" id="settings-formula-admin" value="20" min="0" max="100">
+            </div>
+            <div class="form-group">
+              <label>Production %</label>
+              <input type="number" id="settings-formula-production" value="50" min="0" max="100">
+            </div>
+          </div>
+          <button class="btn btn-primary mt-20" id="btn-save-formula">Save Formula</button>
+        </div>
+        <div class="card">
+          <h3>Data Management</h3>
+          <div class="mt-20">
+            <button class="btn btn-secondary" id="btn-export-data">📤 Export All Data</button>
+            <button class="btn btn-secondary" id="btn-import-data">📥 Import Data</button>
+            <button class="btn btn-warning" id="btn-deactivate-license">🔑 Change License</button>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Employee Modal -->
+  <div id="employee-modal" class="modal-overlay">
+    <div class="modal">
+      <div class="modal-header">
+        <h2 id="employee-modal-title">Add Employee</h2>
+        <button class="modal-close" data-close-modal>&times;</button>
+      </div>
+      <form id="employee-form">
+        <div class="modal-body">
+          <input type="hidden" id="emp-id">
+          <div class="form-row">
+            <div class="form-group">
+              <label>First Name</label>
+              <input type="text" id="emp-first-name" required>
+            </div>
+            <div class="form-group">
+              <label>Last Name</label>
+              <input type="text" id="emp-last-name" required>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Department</label>
+              <select id="emp-department" required>
+                <option value="Production">Production</option>
+                <option value="Admin">Admin</option>
+                <option value="TESA">TESA</option>
+                <option value="Owner">Owner</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Trade/Role</label>
+              <input type="text" id="emp-trade" placeholder="e.g. Electrician">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Contract Type</label>
+              <select id="emp-contract" required>
+                <option value="permanent">Permanent</option>
+                <option value="temporary">Temporary</option>
+                <option value="daily">Daily Worker</option>
+                <option value="offbooks">Off-Books</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Payment Model</label>
+              <select id="emp-payment" required>
+                <option value="monthly">Monthly</option>
+                <option value="hourly">Hourly</option>
+                <option value="daily">Daily</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Net Amount</label>
+              <input type="number" id="emp-amount" step="0.01" required>
+            </div>
+            <div class="form-group">
+              <label>Hours/Month (for monthly)</label>
+              <input type="number" id="emp-hours" value="168">
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-check">
+              <input type="checkbox" id="emp-accepts-overtime">
+              Accepts Overtime (OT+)
+            </label>
+            <small class="text-muted">Can work weekends and more than 8h/day</small>
+          </div>
+          <div class="alert alert-info mt-20">
+            <strong>Cost Preview:</strong><br>
+            Cost/Hour: <span id="emp-cost-hour">0</span> | 
+            Cost/Day: <span id="emp-cost-day">0</span> | 
+            Monthly: <span id="emp-cost-month">0</span>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-close-modal>Cancel</button>
+          <button type="submit" class="btn btn-primary">Save</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Employee History Modal -->
+  <div id="employee-history-modal" class="modal-overlay">
+    <div class="modal modal-xl">
+      <div class="modal-header">
+        <h2>Employee History</h2>
+        <button class="modal-close" data-close-modal>&times;</button>
+      </div>
+      <div class="modal-body">
+        <h3 id="history-employee-name">-</h3>
+        <p class="text-muted" id="history-employee-info">-</p>
+        
+        <div class="employee-stats mt-20">
+          <div class="stat">
+            <div class="stat-value" id="history-worked-hours">0</div>
+            <div class="stat-label">Hours Worked</div>
+          </div>
+          <div class="stat">
+            <div class="stat-value" id="history-produced-hours">0</div>
+            <div class="stat-label">Hours Produced</div>
+          </div>
+          <div class="stat">
+            <div class="stat-value" id="history-efficiency">100%</div>
+            <div class="stat-label">Efficiency</div>
+          </div>
+          <div class="stat">
+            <div class="stat-value" id="history-difference">0</div>
+            <div class="stat-label">Difference</div>
+          </div>
+        </div>
+
+        <h4 class="mt-20">Salary Summary</h4>
+        <div id="history-salary-summary" class="salary-summary mt-10">
+          <p class="text-muted">No salary data</p>
+        </div>
+
+        <h4 class="mt-20">Monthly Timesheet</h4>
+        <div class="timesheet-calendar mt-10" id="history-timesheet">
+          <p class="text-muted">No timesheet data</p>
+        </div>
+
+        <h4 class="mt-20">Job History</h4>
+        <div id="history-job-list" class="job-history-list mt-10">
+          <p class="text-muted">No completed jobs yet</p>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-close-modal>Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Manage Team Modal -->
+  <div id="team-modal" class="modal-overlay">
+    <div class="modal modal-lg">
+      <div class="modal-header">
+        <h2>Manage Team - <span id="team-job-name">-</span></h2>
+        <button class="modal-close" data-close-modal>&times;</button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="team-job-id">
+        <div id="team-members-list"></div>
+        
+        <h4 class="mt-20">Add Employee</h4>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Employee</label>
+            <select id="add-team-employee">
+              <option value="">Select...</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Hours/Day</label>
+            <input type="number" id="add-team-hours" value="8" min="1" max="12">
+          </div>
+          <div class="form-group">
+            <label>&nbsp;</label>
+            <button type="button" class="btn btn-success" id="btn-add-team-member">+ Add</button>
+          </div>
+        </div>
+
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-close-modal>Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Complete Job Modal -->
+  <div id="complete-modal" class="modal-overlay">
+    <div class="modal modal-xl">
+      <div class="modal-header">
+        <h2>Complete Job - <span id="complete-job-name">-</span></h2>
+        <button class="modal-close" data-close-modal>&times;</button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="complete-job-id">
+        <p class="text-muted">Enter actual hours worked and produced for each team member</p>
+        <table class="mt-20">
+          <thead>
+            <tr>
+              <th>Employee</th>
+              <th>Contract</th>
+              <th class="text-right">Allocated</th>
+              <th class="text-right">Hours Worked</th>
+              <th class="text-right">Hours Produced</th>
+              <th class="text-right">Efficiency</th>
+            </tr>
+          </thead>
+          <tbody id="complete-team-tbody"></tbody>
+        </table>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-close-modal>Cancel</button>
+        <button type="button" class="btn btn-success" id="btn-confirm-complete">✅ Complete Job</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Planning Modal -->
+  <div id="planning-modal" class="modal-overlay">
+    <div class="modal modal-xl">
+      <div class="modal-header">
+        <h2>📝 Plan New Job</h2>
+        <button class="modal-close" data-close-modal>&times;</button>
+      </div>
+      <div class="modal-body">
+        <h3>Job Details</h3>
+        <div class="form-row mt-20">
+          <div class="form-group">
+            <label>Job Name</label>
+            <input type="text" id="plan-job-name" placeholder="e.g. Office Renovation">
+          </div>
+          <div class="form-group">
+            <label>Client</label>
+            <input type="text" id="plan-client" placeholder="Client name">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Start Date</label>
+            <input type="date" id="plan-start-date">
+          </div>
+          <div class="form-group">
+            <label>End Date</label>
+            <input type="date" id="plan-end-date">
+          </div>
+          <div class="form-group">
+            <label>Hours Needed</label>
+            <input type="number" id="plan-hours" placeholder="e.g. 200">
+          </div>
+          <div class="form-group">
+            <label>Labor Revenue</label>
+            <input type="number" id="plan-revenue" placeholder="e.g. 15000">
+          </div>
+        </div>
+        
+        <div id="days-info" class="alert alert-info hidden mt-20">
+          <strong>Period:</strong> <span id="period-days">0</span> calendar days 
+          (<span id="period-working">0</span> working + <span id="period-weekend">0</span> weekend)
+        </div>
+        
+        <div class="form-row mt-10" id="effective-days-group" style="display: none;">
+          <div class="form-group">
+            <label>Effective Working Days (override)</label>
+            <input type="number" id="plan-effective-days" min="1" placeholder="Leave empty for auto">
+            <small class="text-muted">How many days will you actually work (including weekends if needed)</small>
+          </div>
+        </div>
+
+        <h3 class="mt-20">Revenue Split Formula</h3>
+        <div class="form-row mt-10">
+          <div class="form-group">
+            <label>Owner %</label>
+            <input type="number" id="plan-owner" value="30" min="0" max="100">
+          </div>
+          <div class="form-group">
+            <label>Admin %</label>
+            <input type="number" id="plan-admin" value="20" min="0" max="100">
+          </div>
+          <div class="form-group">
+            <label>Production %</label>
+            <input type="number" id="plan-production" value="50" min="0" max="100">
+          </div>
+          <div class="form-group">
+            <label>Labor Budget</label>
+            <div class="stat-value" id="plan-labor-budget" style="margin-top: 5px;">0 lei</div>
+          </div>
+        </div>
+
+        <h3 class="mt-20">Off-Books Option</h3>
+        <div class="form-row mt-10">
+          <div class="form-group">
+            <label class="form-check">
+              <input type="checkbox" id="plan-include-offbooks">
+              Include off-books workers in scenarios
+            </label>
+          </div>
+          <div class="form-group" id="offbooks-cost-group" style="display: none;">
+            <label>Off-Books Cost/Day</label>
+            <input type="number" id="plan-offbooks-cost" placeholder="e.g. 200">
+          </div>
+        </div>
+
+        <div class="mt-20">
+          <button class="btn btn-primary" id="btn-generate-scenarios">🔄 Generate Scenarios</button>
+          <button class="btn btn-secondary" id="btn-select-employees">👥 Select Employees Manually</button>
+        </div>
+
+        <!-- Employee Selection Container -->
+        <div id="employee-selection-container" class="hidden mt-20">
+          <h3>Select Employees</h3>
+          <p class="text-muted">Choose employees for this job based on their availability</p>
+          <div id="employee-selection-list" class="employee-selection-list mt-10"></div>
+          <div id="selection-summary" class="selection-summary hidden">
+            <div class="summary-row">
+              <span>Selected Employees:</span>
+              <span id="summary-count">0</span>
+            </div>
+            <div class="summary-row">
+              <span>Total Available Hours:</span>
+              <span id="summary-hours">0h</span>
+            </div>
+            <div class="summary-row">
+              <span>Estimated Cost:</span>
+              <span id="summary-cost">0</span>
+            </div>
+            <div class="summary-row">
+              <span>Hours Needed:</span>
+              <span id="summary-needed">0h</span>
+            </div>
+          </div>
+          <div class="mt-15">
+            <button class="btn btn-success" id="btn-save-manual-selection">💾 Save Manual Selection</button>
+            <button class="btn btn-secondary" id="btn-cancel-selection">Cancel</button>
+          </div>
+        </div>
+
+        <div id="scenarios-container" class="hidden mt-20">
+          <h3>Generated Scenarios</h3>
+          <p class="text-muted">Select one to save</p>
+          <div id="scenarios-grid" class="scenarios-grid mt-20"></div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-close-modal>Close</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="renderer.js"></script>
+</body>
+</html>

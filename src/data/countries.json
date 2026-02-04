@@ -1,0 +1,146 @@
+{
+  "version": "2026.01",
+  "lastUpdated": "2026-01-20",
+  "countries": [
+    {
+      "code": "RO",
+      "name": "Romania",
+      "currency": "RON",
+      "symbol": "lei",
+      "employerTax": 42.5,
+      "dividendTax": 8,
+      "caTax": 3,
+      "notes": "CAS 25% + CASS 10% + Income 10% - employee; CAM ~2.25% employer"
+    },
+    {
+      "code": "MD",
+      "name": "Moldova",
+      "currency": "MDL",
+      "symbol": "lei",
+      "employerTax": 24,
+      "dividendTax": 6,
+      "caTax": 1,
+      "notes": "Social 24% employer"
+    },
+    {
+      "code": "BG",
+      "name": "Bulgaria",
+      "currency": "BGN",
+      "symbol": "лв",
+      "employerTax": 19,
+      "dividendTax": 5,
+      "caTax": 0,
+      "notes": "Flat 10% income"
+    },
+    {
+      "code": "HU",
+      "name": "Hungary",
+      "currency": "HUF",
+      "symbol": "Ft",
+      "employerTax": 13,
+      "dividendTax": 15,
+      "caTax": 0,
+      "notes": "Social contribution 13%"
+    },
+    {
+      "code": "PL",
+      "name": "Poland",
+      "currency": "PLN",
+      "symbol": "zł",
+      "employerTax": 22,
+      "dividendTax": 19,
+      "caTax": 0,
+      "notes": "ZUS ~20% employer"
+    },
+    {
+      "code": "CZ",
+      "name": "Czech Republic",
+      "currency": "CZK",
+      "symbol": "Kč",
+      "employerTax": 34,
+      "dividendTax": 15,
+      "caTax": 0,
+      "notes": "Social 24.8% + Health 9%"
+    },
+    {
+      "code": "DE",
+      "name": "Germany",
+      "currency": "EUR",
+      "symbol": "€",
+      "employerTax": 21,
+      "dividendTax": 25,
+      "caTax": 0,
+      "notes": "Social ~21% employer share"
+    },
+    {
+      "code": "FR",
+      "name": "France",
+      "currency": "EUR",
+      "symbol": "€",
+      "employerTax": 45,
+      "dividendTax": 30,
+      "caTax": 0,
+      "notes": "High employer contributions"
+    },
+    {
+      "code": "IT",
+      "name": "Italy",
+      "currency": "EUR",
+      "symbol": "€",
+      "employerTax": 30,
+      "dividendTax": 26,
+      "caTax": 0,
+      "notes": "INPS ~30% employer"
+    },
+    {
+      "code": "ES",
+      "name": "Spain",
+      "currency": "EUR",
+      "symbol": "€",
+      "employerTax": 30,
+      "dividendTax": 19,
+      "caTax": 0,
+      "notes": "Social Security ~30%"
+    },
+    {
+      "code": "UK",
+      "name": "United Kingdom",
+      "currency": "GBP",
+      "symbol": "£",
+      "employerTax": 13.8,
+      "dividendTax": 8.75,
+      "caTax": 0,
+      "notes": "NI 13.8% employer"
+    },
+    {
+      "code": "AE",
+      "name": "UAE",
+      "currency": "AED",
+      "symbol": "د.إ",
+      "employerTax": 0,
+      "dividendTax": 0,
+      "caTax": 0,
+      "notes": "No income tax"
+    },
+    {
+      "code": "US",
+      "name": "United States",
+      "currency": "USD",
+      "symbol": "$",
+      "employerTax": 7.65,
+      "dividendTax": 20,
+      "caTax": 0,
+      "notes": "FICA 7.65% employer (varies by state)"
+    },
+    {
+      "code": "TR",
+      "name": "Turkey",
+      "currency": "TRY",
+      "symbol": "₺",
+      "employerTax": 22.5,
+      "dividendTax": 10,
+      "caTax": 0,
+      "notes": "SSI ~22.5% employer"
+    }
+  ]
+}

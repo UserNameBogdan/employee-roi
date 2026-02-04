@@ -1,0 +1,129 @@
+{
+  "name": "kiss-employee-roi",
+  "version": "4.3.0",
+  "description": "KISS Employee ROI - Professional team cost optimization and ROI tracking",
+  "main": "main.js",
+  "author": {
+    "name": "KISS Platform",
+    "email": "support@bogdanskissmethod.com",
+    "url": "https://bogdanskissmethod.com"
+  },
+  "license": "Proprietary",
+  "homepage": "https://bogdanskissmethod.com/employee-roi",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/bogdanindigo/employee-roi.git"
+  },
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-builder",
+    "build:win": "electron-builder --win",
+    "build:mac": "electron-builder --mac",
+    "build:linux": "electron-builder --linux",
+    "build:all": "electron-builder -mwl"
+  },
+  "build": {
+    "appId": "com.kissplatform.employeeroi",
+    "productName": "KISS Employee ROI",
+    "copyright": "Copyright © 2026 KISS Platform. All rights reserved.",
+    "directories": {
+      "output": "dist",
+      "buildResources": "build"
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "package.json",
+      "src/**/*",
+      "assets/**/*"
+    ],
+    "extraMetadata": {
+      "name": "KISS Employee ROI"
+    },
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": ["x64", "ia32"]
+        }
+      ],
+      "icon": "build/icon.svg",
+      "artifactName": "KISS-Employee-ROI-Setup-${version}.${ext}",
+      "publisherName": "KISS Platform",
+      "verifyUpdateCodeSignature": false
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "installerIcon": "build/icon.svg",
+      "uninstallerIcon": "build/icon.svg",
+      "installerHeaderIcon": "build/icon.svg",
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "KISS Employee ROI",
+      "perMachine": false,
+      "runAfterFinish": true,
+      "license": false
+    },
+    "mac": {
+      "target": [
+        {
+          "target": "dmg",
+          "arch": ["x64", "arm64"]
+        }
+      ],
+      "icon": "build/icon.svg",
+      "category": "public.app-category.business",
+      "artifactName": "KISS-Employee-ROI-${version}.${ext}",
+      "hardenedRuntime": true,
+      "gatekeeperAssess": false,
+      "entitlements": null,
+      "entitlementsInherit": null
+    },
+    "dmg": {
+      "title": "KISS Employee ROI ${version}",
+      "icon": "build/icon.svg",
+      "contents": [
+        {
+          "x": 130,
+          "y": 220
+        },
+        {
+          "x": 410,
+          "y": 220,
+          "type": "link",
+          "path": "/Applications"
+        }
+      ],
+      "window": {
+        "width": 540,
+        "height": 380
+      }
+    },
+    "linux": {
+      "target": [
+        {
+          "target": "AppImage",
+          "arch": ["x64"]
+        }
+      ],
+      "icon": "build/icon.svg",
+      "category": "Office",
+      "artifactName": "KISS-Employee-ROI-${version}.${ext}",
+      "synopsis": "Professional team cost optimization and ROI tracking",
+      "description": "Track employee costs, optimize team allocation, and maximize ROI with KISS Employee ROI Calculator."
+    },
+    "publish": {
+      "provider": "github",
+      "owner": "bogdanindigo",
+      "repo": "employee-roi"
+    }
+  },
+  "devDependencies": {
+    "electron": "^28.0.0",
+    "electron-builder": "^24.9.1"
+  },
+  "dependencies": {
+    "electron-store": "^8.1.0"
+  }
+}
