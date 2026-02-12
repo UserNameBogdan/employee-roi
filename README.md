@@ -132,7 +132,7 @@ npm run build:all
 
 For support, feature requests, or bug reports:
 
-- **Email**: support@bogdanskissmethod.com
+- **Email**: contact@bogdanskissmethod.com
 - **Website**: [bogdanskissmethod.com](https://bogdanskissmethod.com)
 - **Issues**: [GitHub Issues](https://github.com/bogdanindigo/employee-roi/issues)
 
