@@ -47,7 +47,7 @@
           "arch": ["x64", "ia32"]
         }
       ],
-      "icon": "build/icon.svg",
+      "icon": "build/icon.png",
       "artifactName": "KISS-Employee-ROI-Setup-${version}.${ext}",
       "publisherName": "KISS Platform",
       "verifyUpdateCodeSignature": false
@@ -55,9 +55,9 @@
     "nsis": {
       "oneClick": false,
       "allowToChangeInstallationDirectory": true,
-      "installerIcon": "build/icon.svg",
-      "uninstallerIcon": "build/icon.svg",
-      "installerHeaderIcon": "build/icon.svg",
+      "installerIcon": "build/icon.png",
+      "uninstallerIcon": "build/icon.png",
+      "installerHeaderIcon": "build/icon.png",
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
       "shortcutName": "KISS Employee ROI",
@@ -72,7 +72,7 @@
           "arch": ["x64", "arm64"]
         }
       ],
-      "icon": "build/icon.svg",
+      "icon": "build/icon.png",
       "category": "public.app-category.business",
       "artifactName": "KISS-Employee-ROI-${version}.${ext}",
       "hardenedRuntime": true,
@@ -82,7 +82,6 @@
     },
     "dmg": {
       "title": "KISS Employee ROI ${version}",
-      "icon": "build/icon.svg",
       "contents": [
         {
           "x": 130,
@@ -107,7 +106,7 @@
           "arch": ["x64"]
         }
       ],
-      "icon": "build/icon.svg",
+      "icon": "build/icon.png",
       "category": "Office",
       "artifactName": "KISS-Employee-ROI-${version}.${ext}",
       "synopsis": "Professional team cost optimization and ROI tracking",
