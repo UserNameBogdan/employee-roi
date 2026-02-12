@@ -58,10 +58,8 @@ KISS Employee ROI requires a valid license to use. Licenses are available at:
 
 Purchase at: [bogdanskissmethod.com/employee-roi](https://bogdanskissmethod.com/employee-roi)
 
-### Master Keys (for demo/review)
-- `KISS-ROI-MASTER-BOGDAN-2026`
-- `KISS-ROI-DEMO-YOUTUBE-2026`
-- `KISS-ROI-REVIEW-PRESS-2026`
+
+
 
 ## 📸 Screenshots
 
