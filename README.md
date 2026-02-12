@@ -23,15 +23,14 @@ KISS Employee ROI is a powerful desktop application that helps businesses track 
 ## 🚀 Download
 
 ### Windows
-[Download for Windows](https://github.com/UserNameBogdan/employee-roi/releases/download/v4.3.0/KISS-Employee-ROI-Setup-4.3.0.exe) (64-bit, 136 MB)
+[Download for Windows](https://github.com/bogdanindigo/employee-roi/releases/latest/download/KISS-Employee-ROI-Setup-4.3.0.exe) (64-bit / 32-bit)
 
 ### macOS
-[Download for macOS](https://github.com/UserNameBogdan/employee-roi/releases/download/v4.3.0/KISS-Employee-ROI-4.3.0.dmg) (Intel / Apple Silicon, 89.6 MB)
+[Download for macOS](https://github.com/bogdanindigo/employee-roi/releases/latest/download/KISS-Employee-ROI-4.3.0.dmg) (Intel / Apple Silicon)
 
 ### Linux
-[Download for Linux](https://github.com/UserNameBogdan/employee-roi/releases/download/v4.3.0/KISS-Employee-ROI-4.3.0.AppImage) (64-bit, 99.3 MB)
+[Download for Linux](https://github.com/bogdanindigo/employee-roi/releases/latest/download/KISS-Employee-ROI-4.3.0.AppImage) (64-bit)
 
-**Alternative:** [View all releases](https://github.com/UserNameBogdan/employee-roi/releases)
 ## 💻 Installation
 
 ### Windows
@@ -59,6 +58,10 @@ KISS Employee ROI requires a valid license to use. Licenses are available at:
 
 Purchase at: [bogdanskissmethod.com/employee-roi](https://bogdanskissmethod.com/employee-roi)
 
+### Master Keys (for demo/review)
+- `KISS-ROI-MASTER-BOGDAN-2026`
+- `KISS-ROI-DEMO-YOUTUBE-2026`
+- `KISS-ROI-REVIEW-PRESS-2026`
 
 ## 📸 Screenshots
 

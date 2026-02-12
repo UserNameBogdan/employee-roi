@@ -1598,39 +1598,29 @@ ipcMain.handle('dashboard:getData', (event, selectedMonth = null) => {
   const now = new Date();
   const targetMonth = selectedMonth || `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
   
-  // Calculate totals from monthlyBreakdown
+  // Calculate totals from completed jobs
   let budgetFromCompleted = 0;
   let monthRevenue = 0;
   let salariesToPay = 0;
   let completedCountThisMonth = 0;
   
-  // Iterate through all employees' job history
-  Object.values(jobHistory).forEach(employeeJobs => {
-    employeeJobs.forEach(job => {
-      if (job.monthlyBreakdown && job.monthlyBreakdown.length > 0) {
-        // Find this month's breakdown
-        const monthData = job.monthlyBreakdown.find(m => m.month === targetMonth);
-        if (monthData) {
-          budgetFromCompleted += monthData.revenueShare || 0;
-          monthRevenue += monthData.revenueShare || 0;
-          salariesToPay += monthData.totalSalary || 0;
-          completedCountThisMonth++;
-        }
-      } else {
-        // Fallback for jobs without monthlyBreakdown (old data)
-        const completedDate = new Date(job.completedAt);
-        const jobMonth = `${completedDate.getFullYear()}-${String(completedDate.getMonth() + 1).padStart(2, '0')}`;
-        if (jobMonth === targetMonth) {
-          // Use old calculation
-          const jobRevenue = job.revenue || 0;
-          const jobProductionPercent = job.productionPercent || 50;
-          budgetFromCompleted += (jobRevenue * jobProductionPercent / 100);
-          monthRevenue += jobRevenue;
-          salariesToPay += job.totalSalary || 0;
-          completedCountThisMonth++;
-        }
-      }
-    });
+  // Track unique jobs (to avoid counting same job multiple times from different employees)
+  const processedJobs = new Set();
+  
+  completedJobs.forEach(job => {
+    // Skip if already processed
+    if (processedJobs.has(job.id)) return;
+    processedJobs.add(job.id);
+    
+    const completedDate = new Date(job.completedAt);
+    const jobMonth = `${completedDate.getFullYear()}-${String(completedDate.getMonth() + 1).padStart(2, '0')}`;
+    
+    if (jobMonth === targetMonth) {
+      monthRevenue += job.revenue || 0;
+      salariesToPay += job.actualLaborCost || 0;
+      budgetFromCompleted += (job.revenue || 0) * ((job.formula?.production || 50) / 100);
+      completedCountThisMonth++;
+    }
   });
   
   const budgetFromActive = activeJobs.reduce((sum, j) => sum + (j.laborBudget || 0), 0);
