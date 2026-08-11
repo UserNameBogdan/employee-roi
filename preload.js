@@ -53,5 +53,9 @@ contextBridge.exposeInMainWorld('api', {
   
   // Data export/import
   exportData: () => ipcRenderer.invoke('data:export'),
-  importData: () => ipcRenderer.invoke('data:import')
+  importData: () => ipcRenderer.invoke('data:import'),
+  resetData: () => ipcRenderer.invoke('data:reset'),
+
+  // v4.5.0 - Native confirm (avoids the renderer prompt focus issue)
+  confirmDialog: (params) => ipcRenderer.invoke('ui:confirm', params)
 });

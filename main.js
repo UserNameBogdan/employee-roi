@@ -15,8 +15,10 @@ const APP_TITLE = `Employee ROI v${APP_VERSION} - KISS Platform`;
 // ============================================
 // STORE STRUCTURE - 2 BD-uri principale
 // ============================================
+// v4.4.0 FIX: fixed store name — data survives app upgrades.
+// Old versioned files (employee-roi-vXXX-data.json) are migrated once at startup.
 const store = new Store({
-  name: `employee-roi-v${APP_VERSION.replace(/\./g, '')}-data`,
+  name: 'employee-roi-data',
   defaults: {
     license: null,
     settings: {
@@ -42,6 +44,55 @@ const store = new Store({
   }
 });
 
+// ============================================
+// v4.4.0 - ONE-TIME MIGRATION from versioned stores
+// Finds employee-roi-vXXX-data.json (v4.3.0 and older),
+// copies data into the new fixed store. Old files are kept untouched.
+// ============================================
+function migrateFromVersionedStores() {
+  try {
+    if (store.get('migratedFromVersioned')) return;
+
+    // If the new store already has real data, don't overwrite it
+    const hasData =
+      (store.get('employees') || []).length > 0 ||
+      Object.keys(store.get('timesheets') || {}).length > 0 ||
+      (store.get('completedJobs') || []).length > 0 ||
+      !!store.get('license');
+
+    if (!hasData) {
+      const userDataPath = app.getPath('userData');
+      const files = fs.readdirSync(userDataPath)
+        .filter(f => /^employee-roi-v\d+-data\.json$/.test(f));
+
+      if (files.length > 0) {
+        // Newest version first (v430 > v420 > ...)
+        files.sort((a, b) =>
+          parseInt(b.match(/v(\d+)/)[1], 10) - parseInt(a.match(/v(\d+)/)[1], 10)
+        );
+
+        const oldData = JSON.parse(
+          fs.readFileSync(path.join(userDataPath, files[0]), 'utf8')
+        );
+
+        const keys = ['license', 'settings', 'employees', 'timesheets',
+                      'jobHistory', 'scenarios', 'activeJobs', 'completedJobs'];
+        keys.forEach(k => {
+          if (oldData[k] !== undefined && oldData[k] !== null) {
+            store.set(k, oldData[k]);
+          }
+        });
+        console.log(`Migrated data from ${files[0]}`);
+      }
+    }
+
+    store.set('migratedFromVersioned', true);
+  } catch (e) {
+    // Migration must never break startup; app continues with empty store
+    console.error('Migration from versioned store failed:', e);
+  }
+}
+
 const MASTER_KEYS = [
   'KISS-ROI-MASTER-BOGDAN-2026',
   'KISS-ROI-DEMO-YOUTUBE-2026',
@@ -53,7 +104,7 @@ const MASTER_KEYS = [
 // ============================================
 const SUPABASE_URL = 'https://cpkuzhiekxgrukhkqguh.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_61o6mTc5fRQd9L0MQpf_1g_8bQXwIZB';
-const GRACE_PERIOD_DAYS = 7; // Offline grace period
+// v4.4.0: offline grace = until license expiry (see checkLicenseValidity)
 
 let mainWindow;
 
@@ -135,52 +186,50 @@ async function verifyLicenseOnline(licenseKey) {
   }
 }
 
-async function activateLicenseOnline(licenseKey, hardwareId) {
-  try {
-    const https = require('https');
-    const url = `${SUPABASE_URL}/rest/v1/employee_roi_licenses?key=eq.${encodeURIComponent(licenseKey)}`;
-    
-    const updateData = JSON.stringify({
-      hardware_id: hardwareId,
-      activated_at: new Date().toISOString(),
-      status: 'active'
-    });
-    
-    return new Promise((resolve, reject) => {
-      const urlObj = new URL(url);
-      const req = https.request({
-        hostname: urlObj.hostname,
-        path: urlObj.pathname + urlObj.search,
-        method: 'PATCH',
-        headers: {
-          'apikey': SUPABASE_KEY,
-          'Authorization': `Bearer ${SUPABASE_KEY}`,
-          'Content-Type': 'application/json',
-          'Content-Length': Buffer.byteLength(updateData),
-          'Prefer': 'return=representation'
-        },
-        timeout: 10000
-      }, (res) => {
-        let data = '';
-        res.on('data', chunk => data += chunk);
-        res.on('end', () => {
-          resolve(res.statusCode >= 200 && res.statusCode < 300);
-        });
+// v4.5.0 - Supabase RPC helper: calls server-side functions
+// (activate_roi_license, start_free_job). Writes happen server-side
+// with server time as the authority; RLS stays fully locked.
+function supabaseRpc(fnName, payload) {
+  const https = require('https');
+  const body = JSON.stringify(payload);
+  const urlObj = new URL(`${SUPABASE_URL}/rest/v1/rpc/${fnName}`);
+
+  return new Promise((resolve, reject) => {
+    const req = https.request({
+      hostname: urlObj.hostname,
+      path: urlObj.pathname,
+      method: 'POST',
+      headers: {
+        'apikey': SUPABASE_KEY,
+        'Authorization': `Bearer ${SUPABASE_KEY}`,
+        'Content-Type': 'application/json',
+        'Content-Length': Buffer.byteLength(body)
+      },
+      timeout: 10000
+    }, (res) => {
+      let data = '';
+      res.on('data', chunk => data += chunk);
+      res.on('end', () => {
+        if (res.statusCode < 200 || res.statusCode >= 300) {
+          return reject(new Error(`RPC ${fnName} failed: HTTP ${res.statusCode}`));
+        }
+        try {
+          resolve(JSON.parse(data));
+        } catch (e) {
+          reject(e);
+        }
       });
-      
-      req.on('error', reject);
-      req.on('timeout', () => {
-        req.destroy();
-        reject(new Error('Timeout'));
-      });
-      
-      req.write(updateData);
-      req.end();
     });
-  } catch (error) {
-    console.error('Online activation failed:', error);
-    return false;
-  }
+
+    req.on('error', reject);
+    req.on('timeout', () => {
+      req.destroy();
+      reject(new Error('Timeout'));
+    });
+
+    req.write(body);
+    req.end();
+  });
 }
 
 // ============================================
@@ -188,82 +237,87 @@ async function activateLicenseOnline(licenseKey, hardwareId) {
 // ============================================
 async function checkLicenseValidity() {
   const license = store.get('license');
-  
+
+  // v4.4.0 - Clock reference: record the latest date ever seen on EVERY
+  // startup (all paths, including master key and no-license), so rollback
+  // detection always has a baseline. Moves forward only, never backwards.
+  const now = new Date();
+  const lastSeenRaw = store.get('lastSeenDate');
+  const lastSeen = lastSeenRaw ? new Date(lastSeenRaw) : null;
+  const clockRolledBack = !!(lastSeen && (lastSeen.getTime() - now.getTime()) > 60 * 60 * 1000);
+  if (!lastSeen || now > lastSeen) {
+    store.set('lastSeenDate', now.toISOString());
+  }
+
   // No license at all
   if (!license || !license.key) {
     return { status: 'missing', license: null };
   }
-  
-  // Master keys never expire
+
+  // Master keys never expire (bypass all online/clock checks)
   if (MASTER_KEYS.includes(license.key)) {
     return { status: 'valid', license: { ...license, expiresAt: 'Never' } };
   }
-  
-  const now = new Date();
-  const lastOnlineCheck = license.lastOnlineCheck ? new Date(license.lastOnlineCheck) : null;
-  const daysSinceCheck = lastOnlineCheck ? (now - lastOnlineCheck) / (1000 * 60 * 60 * 24) : GRACE_PERIOD_DAYS + 1;
-  
-  // Try online verification if due (every 7 days or never checked)
-  if (daysSinceCheck >= GRACE_PERIOD_DAYS) {
-    const onlineResult = await verifyLicenseOnline(license.key);
-    
-    if (onlineResult) {
-      // Online check successful
-      if (!onlineResult.found) {
-        return { status: 'invalid', license, reason: 'License not found in database' };
-      }
-      
-      if (onlineResult.status !== 'active') {
-        return { status: 'revoked', license, reason: 'License has been revoked' };
-      }
-      
-      // Check hardware ID
-      const currentHwId = getHardwareId();
-      if (onlineResult.hardwareId && onlineResult.hardwareId !== currentHwId) {
-        return { status: 'invalid', license, reason: 'License is registered to another device' };
-      }
-      
-      // Check expiration
-      const expiresAt = new Date(onlineResult.expiresAt);
-      if (expiresAt < now) {
-        // Update local
-        store.set('license.status', 'expired');
-        store.set('license.expiresAt', onlineResult.expiresAt);
-        return { status: 'expired', license: store.get('license'), reason: 'License has expired' };
-      }
-      
-      // All good - update local cache
-      store.set('license.lastOnlineCheck', now.toISOString());
-      store.set('license.expiresAt', onlineResult.expiresAt);
-      store.set('license.plan', onlineResult.plan);
-      store.set('license.status', 'active');
-      
-      return { status: 'valid', license: store.get('license') };
+
+  // v4.4.0 - Verify online at EVERY startup. Silent when it succeeds.
+  // .catch(null) — a network error must never crash the license check.
+  const onlineResult = await verifyLicenseOnline(license.key).catch(() => null);
+
+  if (onlineResult) {
+    // ---- ONLINE PATH ----
+    if (!onlineResult.found) {
+      return { status: 'invalid', license, reason: 'License not found in database' };
     }
-    
-    // Online check failed (network error) - use local with grace period
-    console.log('Online check failed, using local data with grace period');
-  }
-  
-  // Local check (offline or within grace period)
-  if (license.expiresAt && license.expiresAt !== 'Never') {
-    const expiresAt = new Date(license.expiresAt);
+
+    if (onlineResult.status !== 'active') {
+      return { status: 'revoked', license, reason: 'License has been revoked' };
+    }
+
+    // Check hardware ID
+    const currentHwId = getHardwareId();
+    if (onlineResult.hardwareId && onlineResult.hardwareId !== currentHwId) {
+      return { status: 'invalid', license, reason: 'License is registered to another device' };
+    }
+
+    // Check expiration (server data is authoritative)
+    const expiresAt = new Date(onlineResult.expiresAt);
     if (expiresAt < now) {
+      store.set('license.status', 'expired');
+      store.set('license.expiresAt', onlineResult.expiresAt);
+      return { status: 'expired', license: store.get('license'), reason: 'License has expired' };
+    }
+
+    // All good - refresh local cache silently (no popup, no banner)
+    store.set('license.lastOnlineCheck', now.toISOString());
+    store.set('license.expiresAt', onlineResult.expiresAt);
+    store.set('license.plan', onlineResult.plan);
+    store.set('license.status', 'active');
+
+    return { status: 'valid', license: store.get('license') };
+  }
+
+  // ---- OFFLINE PATH ----
+  // v4.4.0: grace lasts until the license itself expires — no arbitrary
+  // 7-day cutoff. The license self-expires (pay-per-period model), so the
+  // only real offline risk is a rolled-back clock, handled below.
+
+  if (clockRolledBack) {
+    return {
+      status: 'clock_error',
+      license,
+      reason: 'System clock appears to have been set back. Please connect to the internet to verify your license.'
+    };
+  }
+
+  // Local expiry check
+  if (license.expiresAt && license.expiresAt !== 'Never') {
+    if (new Date(license.expiresAt) < now) {
       return { status: 'expired', license, reason: 'License has expired' };
     }
   }
-  
-  // Check grace period for offline
-  if (lastOnlineCheck) {
-    const gracePeriodEnd = new Date(lastOnlineCheck);
-    gracePeriodEnd.setDate(gracePeriodEnd.getDate() + GRACE_PERIOD_DAYS);
-    
-    if (now > gracePeriodEnd) {
-      return { status: 'offline_expired', license, reason: 'Please connect to internet to verify license' };
-    }
-  }
-  
-  return { status: 'valid', license };
+
+  // Valid locally but offline — renderer shows a small corner banner, no popup
+  return { status: 'valid', offline: true, license };
 }
 
 function createWindow() {
@@ -283,7 +337,10 @@ function createWindow() {
   mainWindow.loadFile('src/index.html');
 }
 
-app.whenReady().then(createWindow);
+app.whenReady().then(() => {
+  migrateFromVersionedStores(); // v4.4.0 one-time data migration
+  createWindow();
+});
 app.on('window-all-closed', () => { if (process.platform !== 'darwin') app.quit(); });
 app.on('activate', () => { if (BrowserWindow.getAllWindows().length === 0) createWindow(); });
 
@@ -355,8 +412,20 @@ ipcMain.handle('license:activate', async (event, data) => {
       return { success: false, error: 'License has expired' };
     }
     
-    // Activate online
-    await activateLicenseOnline(key, hardwareId);
+    // v4.5.0 - Activate via server-side RPC (hardware binding) and CHECK
+    // the result — the old code ignored it, so a blocked write went unnoticed.
+    let bind = null;
+    try {
+      bind = await supabaseRpc('activate_roi_license', { p_key: key, p_hardware_id: hardwareId });
+    } catch (e) {
+      bind = null;
+    }
+    if (!bind || bind.ok !== true) {
+      return {
+        success: false,
+        error: (bind && bind.error) || 'Could not register this device. Please check your internet connection and try again.'
+      };
+    }
     
     // Save locally
     const licenseData = {
@@ -1354,7 +1423,51 @@ ipcMain.handle('scenarios:delete', (event, id) => {
 // ============================================
 // JOBS HANDLERS
 // ============================================
-ipcMain.handle('jobs:activate', (event, scenarioId) => {
+ipcMain.handle('jobs:activate', async (event, scenarioId) => {
+  // v4.5.0 - FREE PLAN GATE: one job per 30 days, counted from job
+  // activation. Server time (Supabase) is the authority, so changing the
+  // local clock has no effect. Starting a job on the free plan requires
+  // an internet connection; everything else works offline.
+  const license = store.get('license');
+  const isFree = license && license.plan === 'free' && !MASTER_KEYS.includes(license.key);
+
+  if (isFree) {
+    let gate = null;
+    try {
+      gate = await supabaseRpc('start_free_job', {
+        p_key: license.key,
+        p_hardware_id: getHardwareId()
+      });
+    } catch (e) {
+      gate = null;
+    }
+
+    if (!gate) {
+      return {
+        success: false,
+        error: 'Free version: an internet connection is required to start a job. Please connect and try again.'
+      };
+    }
+
+    if (gate.ok !== true) {
+      if (gate.reason === 'limit') {
+        return {
+          success: false,
+          freeLimit: true,
+          nextAllowed: gate.next_allowed,
+          error: 'Free version allows one job every 30 days.'
+        };
+      }
+      if (gate.reason === 'wrong_device') {
+        return { success: false, error: 'This license is registered to another device.' };
+      }
+      return { success: false, error: 'License check failed. Please try again.' };
+    }
+
+    // Local mirror of the counter (display only — Supabase is the authority)
+    store.set('freeLastJobStartedAt', gate.started_at || new Date().toISOString());
+  }
+
   const scenarios = store.get('scenarios') || [];
   const activeJobs = store.get('activeJobs') || [];
   
@@ -1831,6 +1944,48 @@ ipcMain.handle('reports:exportCSV', async (event, { type, data }) => {
   } catch (error) {
     return { success: false, error: error.message };
   }
+});
+
+// v4.5.0 - Native confirm dialog (main process). Internal renderer prompts
+// (confirm/alert) can freeze inputs on Windows — the known Electron focus
+// issue; a native dialog avoids it AND resets focus.
+ipcMain.handle('ui:confirm', async (event, { title, message, detail }) => {
+  const result = await dialog.showMessageBox(mainWindow, {
+    type: 'question',
+    buttons: ['Cancel', 'Yes'],
+    defaultId: 1,
+    cancelId: 0,
+    title: title || 'Confirm',
+    message: message || 'Are you sure?',
+    detail: detail || undefined
+  });
+  return { confirmed: result.response === 1 };
+});
+
+// v4.5.0 - Reset all working data. License and settings are kept.
+// (Individual deletion of completed jobs is intentionally not offered:
+// it would leave timesheets/jobHistory inconsistent and reports wrong.)
+ipcMain.handle('data:reset', async () => {
+  const result = await dialog.showMessageBox(mainWindow, {
+    type: 'warning',
+    buttons: ['Cancel', 'Delete everything'],
+    defaultId: 0,
+    cancelId: 0,
+    title: 'Reset All Data',
+    message: 'Delete ALL employees, jobs, timesheets and scenarios?',
+    detail: 'Your license and settings are kept. This cannot be undone.'
+  });
+
+  if (result.response !== 1) return { success: false, canceled: true };
+
+  store.set('employees', []);
+  store.set('scenarios', []);
+  store.set('activeJobs', []);
+  store.set('completedJobs', []);
+  store.set('timesheets', {});
+  store.set('jobHistory', {});
+
+  return { success: true };
 });
 
 // ============================================

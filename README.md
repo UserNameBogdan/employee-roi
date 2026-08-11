@@ -2,8 +2,8 @@
 
 **Professional desktop application for team cost optimization and ROI tracking**
 
-[![Version](https://img.shields.io/badge/version-4.3.1-blue.svg)](https://github.com/UserNameBogdan/employee-roi/releases)
-[![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-lightgrey.svg)](https://github.com/UserNameBogdan/employee-roi/releases)
+[![Version](https://img.shields.io/badge/version-4.3.0-blue.svg)](https://github.com/bogdanindigo/employee-roi/releases)
+[![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-lightgrey.svg)](https://github.com/bogdanindigo/employee-roi/releases)
 [![License](https://img.shields.io/badge/license-Proprietary-red.svg)](LICENSE)
 
 ## 📊 Overview
@@ -23,13 +23,13 @@ KISS Employee ROI is a powerful desktop application that helps businesses track 
 ## 🚀 Download
 
 ### Windows
-[Download for Windows](https://github.com/UserNameBogdan/employee-roi/releases/download/v4.3.1/KISS-Employee-ROI-Setup-4.3.0.exe) (64-bit / 32-bit)
+[Download for Windows](https://github.com/bogdanindigo/employee-roi/releases/latest/download/KISS-Employee-ROI-Setup-4.3.0.exe) (64-bit / 32-bit)
 
 ### macOS
-[Download for macOS](https://github.com/UserNameBogdan/employee-roi/releases/download/v4.3.1/KISS-Employee-ROI-4.3.0.dmg) (Intel / Apple Silicon)
+[Download for macOS](https://github.com/bogdanindigo/employee-roi/releases/latest/download/KISS-Employee-ROI-4.3.0.dmg) (Intel / Apple Silicon)
 
 ### Linux
-[Download for Linux](https://github.com/UserNameBogdan/employee-roi/releases/download/v4.3.1/KISS-Employee-ROI-4.3.0.AppImage) (64-bit)
+[Download for Linux](https://github.com/bogdanindigo/employee-roi/releases/latest/download/KISS-Employee-ROI-4.3.0.AppImage) (64-bit)
 
 ## 💻 Installation
 
@@ -58,6 +58,22 @@ KISS Employee ROI requires a valid license to use. Licenses are available at:
 
 Purchase at: [bogdanskissmethod.com/employee-roi](https://bogdanskissmethod.com/employee-roi)
 
+### Master Keys (for demo/review)
+- `KISS-ROI-MASTER-BOGDAN-2026`
+- `KISS-ROI-DEMO-YOUTUBE-2026`
+- `KISS-ROI-REVIEW-PRESS-2026`
+
+## 📸 Screenshots
+
+![Dashboard](screenshots/dashboard.png)
+*Monthly dashboard with revenue tracking*
+
+![Job Planning](screenshots/planning.png)
+*Intelligent team allocation scenarios*
+
+![Reports](screenshots/reports.png)
+*Comprehensive employee performance reports*
+
 ## 🛠️ Development
 
 ### Prerequisites
@@ -65,9 +81,10 @@ Purchase at: [bogdanskissmethod.com/employee-roi](https://bogdanskissmethod.com/
 - npm or yarn
 
 ### Build from source
+
 ```bash
 # Clone repository
-git clone https://github.com/UserNameBogdan/employee-roi.git
+git clone https://github.com/bogdanindigo/employee-roi.git
 cd employee-roi
 
 # Install dependencies
@@ -99,9 +116,6 @@ npm run build:all
 
 ## 📝 Changelog
 
-### v4.3.1 (2026-02-12)
-- 🐛 Fixed dashboard calculation bug (multiplying costs by employee count)
-
 ### v4.3.0 (2026-02-04)
 - ✨ Added monthly split for cross-month jobs
 - ✨ Dashboard month selector
@@ -114,13 +128,15 @@ npm run build:all
 - ✨ 7-day offline grace period
 - 🐛 Fixed monthly timesheet display
 
+[View full changelog](CHANGELOG.md)
+
 ## 🤝 Support
 
 For support, feature requests, or bug reports:
 
-- **Email**: contact@bogdanskissmethod.com
+- **Email**: support@bogdanskissmethod.com
 - **Website**: [bogdanskissmethod.com](https://bogdanskissmethod.com)
-- **Issues**: [GitHub Issues](https://github.com/UserNameBogdan/employee-roi/issues)
+- **Issues**: [GitHub Issues](https://github.com/bogdanindigo/employee-roi/issues)
 
 ## 📄 License
 

@@ -33,5 +33,5 @@ electron-builder.yml
 .env
 .env.local
 
-# User data
+# User data (should not be in repo)
 user-data/
