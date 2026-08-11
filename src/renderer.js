@@ -79,6 +79,10 @@ async function checkLicense() {
     showMainApp();
     await loadAllData();
     renderCurrentPage();
+    // v4.5.0: KISS banner on free plan (all tabs)
+    updateFreeBanner();
+    // v4.4.0: offline but valid — small corner banner, not a popup
+    if (result.offline) showOfflineBanner(result.license);
   } else {
     // License expired/invalid/offline - limited access (Settings only)
     showMainApp();
@@ -171,11 +175,133 @@ function showLicenseExpiredOverlay(status, reason) {
     'expired': 'Your license has expired.',
     'revoked': 'Your license has been revoked.',
     'invalid': reason || 'Invalid license.',
-    'offline_expired': 'Please connect to the internet to verify your license.'
+    'offline_expired': 'Please connect to the internet to verify your license.',
+    'clock_error': 'System clock appears to have been set back. Please connect to the internet to verify your license.'
   };
   reasonEl.textContent = statusMessages[status] || 'License verification failed.';
   
   overlay.style.display = 'flex';
+}
+
+// v4.4.0 - Small non-blocking banner: offline but license still valid
+function showOfflineBanner(license) {
+  if (document.getElementById('offline-banner')) return;
+
+  const until = license && license.expiresAt && license.expiresAt !== 'Never'
+    ? new Date(license.expiresAt).toLocaleDateString()
+    : '';
+
+  const banner = document.createElement('div');
+  banner.id = 'offline-banner';
+  banner.innerHTML = `Offline — license valid${until ? ' until ' + until : ''} <span id="offline-banner-close" title="Dismiss">✕</span>`;
+  document.body.appendChild(banner);
+
+  const style = document.createElement('style');
+  style.textContent = `
+    #offline-banner {
+      position: fixed; bottom: 16px; right: 16px; z-index: 9000;
+      background: #2d2d2d; color: #f0c040; border: 1px solid #f0c040;
+      padding: 8px 14px; border-radius: 8px; font-size: 13px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+    }
+    #offline-banner-close { cursor: pointer; margin-left: 10px; color: #999; }
+    #offline-banner-close:hover { color: #fff; }
+  `;
+  document.head.appendChild(style);
+
+  document.getElementById('offline-banner-close').addEventListener('click', () => banner.remove());
+}
+
+// v4.5.0 - KISS banner: permanent strip at the bottom on the FREE plan,
+// visible on every tab. Disappears entirely on paid plans.
+function updateFreeBanner() {
+  const existing = document.getElementById('kiss-free-banner');
+  const isFree = app.license && app.license.plan === 'free';
+
+  if (!isFree) {
+    if (existing) existing.remove();
+    document.body.classList.remove('has-free-banner');
+    return;
+  }
+  if (existing) return;
+
+  const bar = document.createElement('div');
+  bar.id = 'kiss-free-banner';
+  bar.innerHTML = `
+    <span>⚡ Free version — <strong>KISS Platform</strong> · one job every 30 days</span>
+    <a href="https://bogdanskissmethod.com/employee-roi" target="_blank">Upgrade to unlimited — €50/month</a>
+  `;
+  document.body.appendChild(bar);
+  document.body.classList.add('has-free-banner');
+
+  if (!document.getElementById('kiss-free-banner-style')) {
+    const style = document.createElement('style');
+    style.id = 'kiss-free-banner-style';
+    style.textContent = `
+      #kiss-free-banner {
+        position: fixed; bottom: 0; left: 0; right: 0; height: 42px;
+        z-index: 8000; display: flex; align-items: center; justify-content: center;
+        gap: 16px; background: #1a1a2e; color: #e0e0e0;
+        border-top: 2px solid #f0c040; font-size: 13px;
+        box-shadow: 0 -2px 8px rgba(0,0,0,0.3);
+      }
+      #kiss-free-banner a {
+        color: #f0c040; font-weight: 600; text-decoration: none;
+        padding: 6px 12px; border: 1px solid #f0c040; border-radius: 6px;
+      }
+      #kiss-free-banner a:hover { background: #f0c040; color: #1a1a2e; }
+      body.has-free-banner #main-app { padding-bottom: 48px; }
+    `;
+    document.head.appendChild(style);
+  }
+}
+
+// v4.5.0 - Upgrade overlay: shown when the free job limit is reached.
+// Dismissible — the app stays fully usable, only NEW jobs are gated.
+function showFreeUpgradeOverlay(nextAllowed) {
+  let overlay = document.getElementById('free-upgrade-overlay');
+  if (overlay) overlay.remove();
+
+  const nextDate = nextAllowed ? new Date(nextAllowed).toLocaleDateString() : '';
+
+  overlay = document.createElement('div');
+  overlay.id = 'free-upgrade-overlay';
+  overlay.innerHTML = `
+    <div class="overlay-content">
+      <div class="overlay-icon">🔒</div>
+      <h2 class="overlay-title">Free job used</h2>
+      <p class="overlay-reason">The free version allows one job every 30 days.${nextDate ? `<br>Your next job unlocks on <strong>${nextDate}</strong>.` : ''}</p>
+      <p class="overlay-message">Your data, dashboard, reports and exports remain fully available.</p>
+      <div class="overlay-actions">
+        <a class="btn btn-primary" href="https://bogdanskissmethod.com/employee-roi" target="_blank">Upgrade — unlimited jobs, €50/month</a>
+        <button class="btn" onclick="document.getElementById('free-upgrade-overlay').remove()">Not now</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+
+  if (!document.getElementById('free-upgrade-overlay-style')) {
+    const style = document.createElement('style');
+    style.id = 'free-upgrade-overlay-style';
+    style.textContent = `
+      #free-upgrade-overlay {
+        position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+        background: rgba(0, 0, 0, 0.75); z-index: 9500;
+        display: flex; align-items: center; justify-content: center;
+      }
+      #free-upgrade-overlay .overlay-content {
+        background: #1e2a3a; border: 1px solid #f0c040; border-radius: 12px;
+        padding: 32px 40px; max-width: 460px; text-align: center; color: #e0e0e0;
+      }
+      #free-upgrade-overlay .overlay-icon { font-size: 40px; margin-bottom: 8px; }
+      #free-upgrade-overlay .overlay-title { color: #f0c040; margin: 8px 0; }
+      #free-upgrade-overlay .overlay-reason { margin: 12px 0; line-height: 1.5; }
+      #free-upgrade-overlay .overlay-message { font-size: 13px; color: #aaa; margin-bottom: 20px; }
+      #free-upgrade-overlay .overlay-actions { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+      #free-upgrade-overlay a.btn { text-decoration: none; }
+    `;
+    document.head.appendChild(style);
+  }
 }
 
 function hideLicenseOverlay() {
@@ -269,6 +395,15 @@ function setupEventListeners() {
   document.getElementById('btn-export-data').addEventListener('click', exportData);
   document.getElementById('btn-import-data').addEventListener('click', importData);
   document.getElementById('btn-deactivate-license').addEventListener('click', deactivateLicense);
+  // v4.5.0 - Reset all data (confirmation happens in the native dialog)
+  document.getElementById('btn-reset-data').addEventListener('click', async () => {
+    const result = await window.api.resetData();
+    if (result.success) {
+      await loadAllData();
+      renderCurrentPage();
+      navigateTo('dashboard');
+    }
+  });
   
   // Reports
   document.getElementById('btn-export-employees-csv').addEventListener('click', () => exportCSV('employees'));
@@ -331,6 +466,7 @@ async function handleLicenseSubmit(e) {
     showMainApp();
     await loadAllData();
     renderCurrentPage();
+    updateFreeBanner(); // v4.5.0
   } else {
     alert(result.error || 'Invalid license key');
   }
@@ -1238,6 +1374,9 @@ async function activateScenario(scenarioId) {
     await loadAllData();
     renderJobs();
     document.querySelector('#page-jobs .tab[data-tab="active"]').click();
+  } else if (result.freeLimit) {
+    // v4.5.0: free job already used this 30-day window
+    showFreeUpgradeOverlay(result.nextAllowed);
   } else {
     alert(result.error || 'Failed to activate');
   }
@@ -1245,7 +1384,12 @@ async function activateScenario(scenarioId) {
 window.activateScenario = activateScenario;
 
 async function deleteScenario(scenarioId) {
-  if (!confirm('Delete this scenario?')) return;
+  // v4.5.0: native dialog instead of confirm() — avoids the focus freeze
+  const { confirmed } = await window.api.confirmDialog({
+    title: 'Delete Scenario',
+    message: 'Delete this scenario?'
+  });
+  if (!confirmed) return;
   await window.api.deleteScenario(scenarioId);
   await loadAllData();
   renderJobs();
