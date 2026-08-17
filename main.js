@@ -130,50 +130,27 @@ function getHardwareId() {
 // ============================================
 // SUPABASE LICENSE VERIFICATION
 // ============================================
+// v4.5.2 - Verification goes through the verify_roi_license RPC instead of
+// reading the licences table directly. The function returns only the row for
+// the key it is given, so direct SELECT on the table can stay closed.
+// Return contract is unchanged: null on network error, { found: false }
+// when the key does not exist.
 async function verifyLicenseOnline(licenseKey) {
   try {
-    const https = require('https');
-    const url = `${SUPABASE_URL}/rest/v1/employee_roi_licenses?key=eq.${encodeURIComponent(licenseKey)}&select=*`;
-    
-    return new Promise((resolve, reject) => {
-      const req = https.get(url, {
-        headers: {
-          'apikey': SUPABASE_KEY,
-          'Authorization': `Bearer ${SUPABASE_KEY}`,
-          'Content-Type': 'application/json'
-        },
-        timeout: 10000
-      }, (res) => {
-        let data = '';
-        res.on('data', chunk => data += chunk);
-        res.on('end', () => {
-          try {
-            const licenses = JSON.parse(data);
-            if (licenses && licenses.length > 0) {
-              const license = licenses[0];
-              resolve({
-                found: true,
-                status: license.status,
-                plan: license.plan,
-                expiresAt: license.expires_at,
-                hardwareId: license.hardware_id,
-                email: license.email
-              });
-            } else {
-              resolve({ found: false });
-            }
-          } catch (e) {
-            reject(e);
-          }
-        });
-      });
-      
-      req.on('error', reject);
-      req.on('timeout', () => {
-        req.destroy();
-        reject(new Error('Timeout'));
-      });
-    });
+    const result = await supabaseRpc('verify_roi_license', { p_key: licenseKey });
+
+    if (!result || result.found !== true) {
+      return { found: false };
+    }
+
+    return {
+      found: true,
+      status: result.status,
+      plan: result.plan,
+      expiresAt: result.expires_at,
+      hardwareId: result.hardware_id,
+      email: result.email
+    };
   } catch (error) {
     console.error('Online verification failed:', error);
     return null; // Network error - will use local
