@@ -93,12 +93,6 @@ function migrateFromVersionedStores() {
   }
 }
 
-const MASTER_KEYS = [
-  'KISS-ROI-MASTER-BOGDAN-2026',
-  'KISS-ROI-DEMO-YOUTUBE-2026',
-  'KISS-ROI-REVIEW-PRESS-2026'
-];
-
 // ============================================
 // SUPABASE CONFIG
 // ============================================
@@ -254,11 +248,6 @@ async function checkLicenseValidity() {
     return { status: 'missing', license: null };
   }
 
-  // Master keys never expire (bypass all online/clock checks)
-  if (MASTER_KEYS.includes(license.key)) {
-    return { status: 'valid', license: { ...license, expiresAt: 'Never' } };
-  }
-
   // v4.4.0 - Verify online at EVERY startup. Silent when it succeeds.
   // .catch(null) — a network error must never crash the license check.
   const onlineResult = await verifyLicenseOnline(license.key).catch(() => null);
@@ -383,7 +372,7 @@ ipcMain.handle('license:activate', async (event, data) => {
   const { key, country, currency, symbol, companyName, employerTax, dividendTax, caTax } = data;
   if (!key || !key.startsWith('KISS-ROI-')) return { success: false, error: 'Invalid license key' };
   
-  const isMaster = MASTER_KEYS.includes(key);
+  const isMaster = false;
   const hardwareId = getHardwareId();
   
   if (!isMaster) {
@@ -1429,7 +1418,7 @@ ipcMain.handle('jobs:activate', async (event, scenarioId) => {
   // local clock has no effect. Starting a job on the free plan requires
   // an internet connection; everything else works offline.
   const license = store.get('license');
-  const isFree = license && license.plan === 'free' && !MASTER_KEYS.includes(license.key);
+  const isFree = license && license.plan === 'free';
 
   if (isFree) {
     let gate = null;
